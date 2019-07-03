@@ -11,9 +11,6 @@ const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}`;
 
 console.log(url);
 
-const isSearched = searchTerm => item =>
-  item.title.toLowerCase().includes(searchTerm.toLowerCase());
-
 class App extends Component {
   constructor(props) {
     super(props);
@@ -24,20 +21,28 @@ class App extends Component {
     };
   }
 
-  setSearchTopStories = result => {
-    this.setState({ result });
-    //console.log(this.state);
-  }
-
-  componentDidMount() {
-    fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${this.state.searchTerm}`)
+  fetchSearchTopStories = (searchTerm) => {
+    fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`)
       .then(response => response.json())
       .then(result => this.setSearchTopStories(result))
       .catch(error => error);
   }
 
+  setSearchTopStories = result => {
+    this.setState({ result });
+  }
+
+  componentDidMount() {
+    this.fetchSearchTopStories(this.state.searchTerm);
+  }
+
   onSearchChange = event => {
     this.setState({ searchTerm: event.target.value });
+  }
+
+  onSearchhSubmit = event => {
+    this.fetchSearchTopStories(this.state.searchTerm);
+    event.preventDefault();
   }
 
   onDismiss = id => {
@@ -55,6 +60,7 @@ class App extends Component {
         <Search
           value={searchTerm}
           onChange={this.onSearchChange}
+          onSubmit={this.onSearchhSubmit}
         >
           Search
         </Search>
@@ -72,19 +78,22 @@ class App extends Component {
   }
 }
 
-const Search = ({value, onChange, children}) =>
-      <form>
+const Search = ({value, onChange,onSubmit , children}) =>
+      <form onSubmit={onSubmit}>
         { children }<input
           type="text"
           value={value}
           onChange={onChange}
         />
+        <button type="submit">
+          {children}
+        </button>
       </form>
 
 const Table = ({list, pattern, onDismiss}) => {
   return (
       <div className="table">
-        {list.filter(isSearched(pattern)).map(item =>
+        {list.map(item =>
           <div key={item.objectID} className="table-row">
             <span style={{ width: '40%' }}>
               <a href={item.url}>{item.title}</a>
